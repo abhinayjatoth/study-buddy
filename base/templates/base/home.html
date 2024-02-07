@@ -1,0 +1,51 @@
+<style>
+  .home-container {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .browse-topics,
+  .rooms-list {
+    flex: 2;
+    margin-right: 20px; /* Adjust margin as needed */
+  }
+</style>
+
+
+{% extends "main.html" %} 
+{% block content%}
+
+
+<div class="home-container">
+    <div class="browse-topics" >
+      <h3>Browse Topics</h3>
+      <hr>
+
+      {% for topic in topics %}
+        <div>
+            <a href="{% url 'home'%}?q={{topic.name}}"> {{topic.name}}<a/>
+        </div>
+      {%endfor%}
+    </div>
+
+
+    <div class="rooms-list">
+      <h5>{{room_count}} rooms found</h5>
+      <a href="{% url "create-room" %}">Create Room</a>
+
+        {% for room in rooms %}
+          <div>
+            <a href="{% url "update-room" room.id %}">Edit</a>
+            <a href="{% url "delete-room" room.id %}">Delete</a>
+            <span>@{{room.host.username}}</span>
+            <h3>{{room.id}} -- <a href='{% url "room" room.id %}'>{{room.name}}</h3></a>
+            <small>{{room.topic.name}}</small>
+            <hr>
+          
+
+        {% endfor %} 
+        </div>
+    </div>
+</div>
+
+{% endblock content%}

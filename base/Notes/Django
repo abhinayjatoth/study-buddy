@@ -1,0 +1,34 @@
+# Main project
+
+    - urls must include redirection to app urls
+    - App urls imports views where pages are descirbed
+
+Create Templates folder for creating Html files
+Add path to templates in settings.py in main
+
+Template Inheritance
+
+Passing data to template - Django template Engine. Syntax - {{ var }} {% statements %}
+
+Django requires you to create template folder for templates in each app - Inside template you again need to create another folder with the same name as app
+
+# Database
+
+    - Apply migration
+    - Create Model
+    - makeMigration
+    - Apply migrate
+
+Import model in admin.py and register the model
+import model in views - here you can query the data from models based on our reuqirement
+
+Create all the required models
+
+Create form
+Create ModelForm to auto create all fields of the table or custom fields of table and
+
+POST method with empty action will send POST data to same url
+you can use the data and then use redirect moethod to redirect to home page from views
+
+- Orderding can be set in views while querying or in Model with meta data
+  [-updated] - is ascending else descending
