@@ -32,3 +32,15 @@ you can use the data and then use redirect moethod to redirect to home page from
 
 - Orderding can be set in views while querying or in Model with meta data
   [-updated] - is ascending else descending
+
+Authentication :
+
+- Custom or Inbuilt
+- Get username and password from form POST
+- validate if username is in Users DataBase or flash meaagse
+- use login, logout method to login user and logout user
+
+Comments:
+
+- Room is parent model and Messages is child model
+- messgaes_set.all() gives all child enters for a parent value

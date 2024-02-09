@@ -10,9 +10,60 @@
   </head>
   <body>
     {% extends "main.html" %} {% block content%}
-    <h1>Room Template</h1>
-    <h2>{{room.name}}</h2>
-    <h3>{{room.description}}</h3>
+    <style>
+            .room-container {
+              display: grid;
+              grid-template-columns: 3fr 1fr;
+            }
+      {% comment %}
+            .participants-container {
+              flex: 2;
+              margin-right: 20px; /* Adjust margin as needed */
+            } {% endcomment %}
+    </style>
+
+    <div class="room-container">
+      <div>
+        <h1>Room Template</h1>
+        <h2>{{room.name}}</h2>
+        <small>{{room.description}}</small>
+        <hr />
+        <div class="comment-wrapper">
+          <h3>Conversatins</h3>
+          <hr />
+          {% for message in room_messages %}
+          <div>
+            {%if request.user == message.user %}
+            <a href="{% url 'delete-message' message.id %}">Delete</a>
+            {%endif%}
+            <small>{{message.user}} {{message.created}}</small>
+            <p>{{message}}</p>
+            <hr />
+          </div>
+          {%endfor%}
+        </div>
+        {% if request.user.is_authenticated %}
+        <div>
+          <form method="POST" action="">
+            {% csrf_token %}
+            <input
+              type="text"
+              name="body"
+              placeholder="Write your message here"
+            />
+          </form>
+        </div>
+        {%endif%}
+      </div>
+
+      <div class="participants-container">
+        <h3>Participants</h3>
+        {% for user in participants %}
+        <p>@{{user.username}}</p>
+
+        {%endfor%}
+      </div>
+    </div>
     {%endblock content%}
 
     <script src="" async defer></script>

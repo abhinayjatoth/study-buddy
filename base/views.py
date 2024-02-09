@@ -1,9 +1,52 @@
 from django.shortcuts import render, redirect
-from .models import Room, Topic
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from .models import Room, Topic, Message
+from django.contrib.auth.models import User
 from django.db.models import Q
 from .forms import RoomForm
+from django.http import HttpResponse
+from django.contrib.auth.forms import UserCreationForm
 
-# Create your views here.
+def loginPage(request):
+    page = 'login'
+    if request.user.is_authenticated:
+        return redirect('home')
+    if request.method == 'POST':
+        username = request.POST.get('username').lower()
+        password = request.POST.get('password')
+        try:
+            user = User.objects.get(username=username)
+        except:
+            messages.error(request, "User doesnt exist.")  
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('home')
+        else:
+            messages.error(request, 'username or password is wrong')
+    context ={'page':page}
+    return render(request, 'base/login_register.html', context)
+    
+def logoutPage(request):
+    logout(request)
+    return redirect('home')
+
+def registerUser(request):
+    form = UserCreationForm()
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user= form.save(commit=False)
+            user.username = user.username.lower()
+            user.save()
+            login(request,user)
+            return redirect('home')
+        else:
+            messages.error(request, 'An Error Occoured during registration')
+    return render(request, 'base/login_register.html', {'form': form})
+
 def home(request):
     q= request.GET.get('q') if request.GET.get('q')!=None else ''
     rooms = Room.objects.filter(
@@ -19,9 +62,20 @@ def home(request):
 
 def room(request, pk):
     room = Room.objects.get(id=pk)
-    context = {'room': room}
+    room_messages = room.message_set.all().order_by('-created')
+    participants = room.participants.all()
+    if request.method == 'POST':
+        message = Message.objects.create(
+            user = request.user,
+            room = room,
+            body = request.POST.get('body')
+        )
+        room.participants.add(request.user)
+        return redirect('room', pk=room.id)
+    context = {'room': room, 'room_messages': room_messages, 'participants': participants}
     return render(request, 'base/room.html', context)
 
+@login_required(login_url='login-register')
 def createRoom(request):
     form = RoomForm()
     if request.method == 'POST':
@@ -32,9 +86,12 @@ def createRoom(request):
     context= {'form': form}
     return render(request, 'base/room_form.html', context)
 
+@login_required(login_url='login-register')
 def updateRoom(request, pk):
     room = Room.objects.get(id=pk)
     form = RoomForm(instance=room)
+    if request.user != room.host:
+        return HttpResponse('Not Auhtorised to edit')
     if request.method == 'POST':
         form = RoomForm(request.POST, instance=room)
         if form.is_valid():
@@ -45,8 +102,27 @@ def updateRoom(request, pk):
 
 def deleteRoom(request, pk):
     room = Room.objects.get(id=pk)
+    if request.user != room.host:
+        return HttpResponse('Not Auhtorised to Delete')
     if request.method == 'POST':
         room.delete()
         return redirect('home')
     context= {'room': room}
+    return render(request, 'base/delete_room.html', context)
+
+def deleteMessage(request, pk):
+    message = Message.objects.get(id=pk)
+    room = message.room
+    participants = room.participants.all()
+    print(participants)
+    if request.user != message.user:
+        return HttpResponse('Not Auhtorised to Delete')
+    if request.method == 'POST':
+        message.delete()
+        if (request.user in participants):
+            user_messages_count = Message.objects.filter(user=request.user, room=room).count()
+            if user_messages_count == 0:
+                room.participants.remove(request.user)
+        return redirect('room', pk=room.id)
+    context= {'message': message}
     return render(request, 'base/delete_room.html', context)
