@@ -4,50 +4,28 @@
     flex-direction: row;
   }
 
-  .browse-topics,
+  .browse-topics {
+    flex: 1;
+  }
+  ,
   .rooms-list {
-    flex: 2;
-    margin-right: 20px; /* Adjust margin as needed */
+    flex: 1;
+    margin-right: 20px;
+  }
+  .recent-activity {
+    flex: 3;
+    margin-right: 30px; /* Adjust margin as needed */
   }
 </style>
-
-
-{% extends "main.html" %} 
-{% block content%}
-
+{% extends "main.html" %} {% block content %}
 
 <div class="home-container">
-    <div class="browse-topics" >
-      <h3>Browse Topics</h3>
-      <hr>
+  <div class="browse-topics">{% include 'base/topics_container.html' %}</div>
+  <div class="rooms-list">
+    <small>{{ room_count }} rooms found</small>
+    {% include 'base/feed_container.html' %}
+  </div>
 
-      {% for topic in topics %}
-        <div>
-            <a href="{% url 'home'%}?q={{topic.name}}"> {{topic.name}}<a/>
-        </div>
-      {%endfor%}
-    </div>
-
-
-    <div class="rooms-list">
-      <h5>{{room_count}} rooms found</h5>
-      <a href="{% url "create-room" %}">Create Room</a>
-
-        {% for room in rooms %}
-          <div>
-            {%if request.user == room.host %}
-            <a href="{% url "update-room" room.id %}">Edit</a>
-            <a href="{% url "delete-room" room.id %}">Delete</a>
-            {%endif%}
-            <span>@{{room.host.username}}</span>
-            <h3>{{room.id}} -- <a href='{% url "room" room.id %}'>{{room.name}}</h3></a>
-            <small>{{room.topic.name}}</small>
-            <hr>
-          
-
-        {% endfor %} 
-        </div>
-    </div>
+  <div class="recent-activity">{% include "base/activity_container.html"%}</div>
 </div>
-
-{% endblock content%}
+{% endblock content %}
